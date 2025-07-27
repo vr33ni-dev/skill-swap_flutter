@@ -19,6 +19,20 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> loginUser(String email, String password) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/users/login'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to login');
+    }
+  }
+
   Future<Map<String, dynamic>> getUser(String userId) async {
     final response = await http.get(Uri.parse('$baseUrl/users/$userId'));
     if (response.statusCode == 200) {
@@ -36,6 +50,18 @@ class ApiService {
       return data.cast<Map<String, dynamic>>();
     } else {
       throw Exception('Could not fetch users');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAvailableUsers(String userId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/users/available?userId=$userId'),
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.cast<Map<String, dynamic>>();
+    } else {
+      throw Exception('Could not fetch available users for userId: $userId');
     }
   }
 
@@ -97,27 +123,21 @@ class ApiService {
 
   // === MATCHES ===
 
-  Future<Map<String, dynamic>> createMatch(Map<String, dynamic> match) async {
+  Future<void> createMatch(String user1Id, String user2Id) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/matches'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(match),
+      Uri.parse('$baseUrl/matches?user1Id=$user1Id&user2Id=$user2Id'),
     );
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to create match');
+    if (response.statusCode != 200) {
+      throw Exception('Could not create match');
     }
   }
 
   Future<void> updateMatchStatus(String matchId, String status) async {
     final response = await http.patch(
-      Uri.parse('$baseUrl/matches/$matchId/status'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'status': status}),
+      Uri.parse('$baseUrl/matches/$matchId/status?status=$status'),
     );
     if (response.statusCode != 200) {
-      throw Exception('Failed to update match status');
+      throw Exception('Could not update match status');
     }
   }
 
@@ -126,7 +146,7 @@ class ApiService {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Could not get matches');
+      throw Exception('Could not load matches');
     }
   }
 

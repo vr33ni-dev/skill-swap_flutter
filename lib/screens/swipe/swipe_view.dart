@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/user_provider.dart';
-import '../providers/swipe_provider.dart';
-import '../widgets/swipe_stack.dart';
-import 'user_profile_screen.dart';
+import '../../providers/user_provider.dart';
+import '../../providers/swipe_provider.dart';
+import '../inbox_screen.dart';
+import '../profile_view.dart';
+import 'swipe_stack.dart';
 
-class SwipeScreen extends StatefulWidget {
-  const SwipeScreen({super.key});
+class SwipeView extends StatefulWidget {
+  const SwipeView({super.key});
 
   @override
-  State<SwipeScreen> createState() => _SwipeScreenState();
+  State<SwipeView> createState() => _SwipeViewState();
 }
 
-class _SwipeScreenState extends State<SwipeScreen> {
+class _SwipeViewState extends State<SwipeView> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = context.read<UserProvider>().profile;
+      debugPrint('🔍 User in SwipeView: $user');
       if (user != null && user['id'] != null) {
         context.read<SwipeProvider>().loadUsers(user['id'], user);
       }
@@ -33,22 +35,30 @@ class _SwipeScreenState extends State<SwipeScreen> {
           IconButton(
             icon: const Icon(Icons.undo),
             tooltip: 'Undo Swipe',
+            onPressed: () => context.read<SwipeProvider>().swipeBack(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.mail_outline),
+            tooltip: 'Inbox',
             onPressed: () {
-              context.read<SwipeProvider>().swipeBack();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const InboxScreen()),
+              );
             },
           ),
           IconButton(
             icon: const Icon(Icons.person),
+            tooltip: 'Profile',
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const UserProfileScreen()),
+                MaterialPageRoute(builder: (_) => const ProfileView()),
               );
             },
           ),
         ],
       ),
-
       body: const SwipeStack(),
     );
   }

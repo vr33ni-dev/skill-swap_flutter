@@ -7,6 +7,8 @@ class ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List offered = profile['skillsOffered'] ?? [];
+    final List needed = profile['skillsNeeded'] ?? [];
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       child: Padding(
@@ -28,6 +30,34 @@ class ProfileCard extends StatelessWidget {
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             Text(profile['location'] ?? 'No location'),
+
+            const SizedBox(height: 20),
+            if (offered.isNotEmpty) ...[
+              const Text(
+                "Offers:",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Wrap(
+                spacing: 8,
+                children: offered
+                    .map((skill) => Chip(label: Text(skill['name'])))
+                    .toList(),
+              ),
+              const SizedBox(height: 10),
+            ],
+
+            if (needed.isNotEmpty) ...[
+              const Text(
+                "Needs:",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Wrap(
+                spacing: 8,
+                children: needed
+                    .map((skill) => Chip(label: Text(skill['name'])))
+                    .toList(),
+              ),
+            ],
           ],
         ),
       ),

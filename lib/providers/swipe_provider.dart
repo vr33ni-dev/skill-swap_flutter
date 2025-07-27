@@ -13,7 +13,7 @@ class SwipeProvider extends ChangeNotifier {
 
   List<Map<String, dynamic>> _allFetchedUsers = [];
   String myUserId = '';
-  Map<String, dynamic> myProfile = {}; // ✅ holds my skills
+  Map<String, dynamic> myProfile = {};
 
   String _filterMode = 'all'; // 'all' or 'relevant'
   String get filterMode => _filterMode;
@@ -45,21 +45,33 @@ class SwipeProvider extends ChangeNotifier {
     _currentIndex = 0;
   }
 
-  Future<void> loadUsers(
-    String myId,
-    Map<String, dynamic> myProfileData,
-  ) async {
+  Future<void> loadUsers(String userId, Map<String, dynamic> profile) async {
+    myUserId = userId;
+    myProfile = profile;
+
     try {
-      myUserId = myId;
-      myProfile = myProfileData;
+      final allUsers = await _apiService.getAvailableUsers(userId);
+      final matches = await _apiService.getMatchesForUser(userId);
 
-      final allUsers = await _apiService.getAllUsers();
-      _allFetchedUsers = allUsers;
+      final blockedIds = matches
+          .map<String>(
+            (m) => m['user1']['id'] == userId
+                ? m['user2']['id']
+                : m['user1']['id'],
+          )
+          .toSet();
 
-      _applyFilter();
+      final swipable = allUsers
+          .where((u) => u['id'] != userId && !blockedIds.contains(u['id']))
+          .toList();
+
+      _allFetchedUsers = allUsers; // optionally store full list
+      _users = swipable;
+      _currentIndex = 0;
+      _applyFilter(); // respects current filter
       notifyListeners();
     } catch (e) {
-      debugPrint('Error loading users for swipe: $e');
+      debugPrint('Error loading swipable users: $e');
     }
   }
 
@@ -67,8 +79,86 @@ class SwipeProvider extends ChangeNotifier {
     _moveNext();
   }
 
-  void swipeRight() {
-    _moveNext();
+  void swipeRight(BuildContext context) async {
+    if (_currentIndex >= _users.length || myProfile['id'] == null) return;
+
+    final Map<String, dynamic> otherUser = _users[_currentIndex];
+
+    // Prompt for message
+    final message = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        final controller = TextEditingController();
+        return AlertDialog(
+          title: Text('Send a message to ${otherUser['name']}'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(hintText: 'Say hi...'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, null),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, controller.text),
+              child: const Text('Send'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (message != null && message.trim().isNotEmpty) {
+      try {
+        final Map<String, dynamic> myUser = Map<String, dynamic>.from(
+          myProfile,
+        );
+        final Map<String, dynamic> updatedOtherUser = Map<String, dynamic>.from(
+          _users[_currentIndex],
+        );
+
+        // Create match request
+        await _apiService.createMatch(myUser['id'], updatedOtherUser['id']);
+
+        // Fetch matches again
+        final matches = await _apiService.getMatchesForUser(myUser['id']);
+
+        final createdMatch = matches.firstWhere(
+          (m) =>
+              (m['user1']['id'] == myUser['id'] &&
+                  m['user2']['id'] == updatedOtherUser['id']) ||
+              (m['user2']['id'] == myUser['id'] &&
+                  m['user1']['id'] == updatedOtherUser['id']),
+          orElse: () => null,
+        );
+
+        if (createdMatch == null) {
+          debugPrint('No match found after creating one.');
+          return;
+        }
+
+        // Send the message
+        await _apiService.sendMessage({
+          'matchId': createdMatch['id'],
+          'senderId': myUser['id'],
+          'content': message,
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Request and message sent to ${updatedOtherUser['name']}!',
+            ),
+          ),
+        );
+      } catch (e) {
+        debugPrint('Swipe right error: $e');
+      }
+    }
+
+    _currentIndex++;
+    notifyListeners();
   }
 
   void swipeBack() {

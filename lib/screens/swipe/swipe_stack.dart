@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/swipe_provider.dart';
+import '../../providers/swipe_provider.dart';
 import 'profile_card.dart';
 
 class SwipeStack extends StatelessWidget {
@@ -32,7 +32,9 @@ class SwipeStack extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.favorite, color: Colors.green),
               iconSize: 40,
-              onPressed: swipeProvider.swipeRight,
+              onPressed: () {
+                context.read<SwipeProvider>().swipeRight(context);
+              },
             ),
           ],
         ),

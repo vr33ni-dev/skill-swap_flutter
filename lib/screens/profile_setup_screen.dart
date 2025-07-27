@@ -15,6 +15,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _nameController = TextEditingController();
   final _bioController = TextEditingController();
   final _customSkillController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   List<Map<String, dynamic>> allSkills = [];
   Map<String, List<Map<String, dynamic>>> groupedSkills = {};
@@ -89,8 +90,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     final profile = {
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
       'name': _nameController.text.trim(),
-      'email':
-          '${_nameController.text.trim().toLowerCase().replaceAll(' ', '_')}@example.com',
+      'password': _passwordController.text.trim(),
+      'email': _nameController.text.trim().toLowerCase().replaceAll(' ', '_'),
       'bio': _bioController.text.trim(),
       'skillsOffered': skillsOffered,
       'skillsNeeded': skillsNeeded,
@@ -236,6 +237,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     controller: _nameController,
                     decoration: const InputDecoration(labelText: 'Name'),
                   ),
+                  TextField(
+                    controller: _passwordController,
+                    decoration: const InputDecoration(labelText: 'Password'),
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 8),
+
                   const SizedBox(height: 8),
                   TextField(
                     controller: _bioController,
