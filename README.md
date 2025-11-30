@@ -16,4 +16,4 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 ---
-> **Note:** The canonical repository is [**on GitHub**](https://github.com/vr33ni-dev/skill-swap_flutter) · [Mirror on GitLab →](https://gitlab.com/vr33ni-personal/skill-swap_flutter.git) [![Mirror Status](https://github.com/vr33ni-dev/skill-swap_flutter/actions/workflows/mirror.yml/badge.svg)](https://github.com/vr33ni-dev/skill-swap_flutter/actions/workflows/mirror.yml)
+> **Note:** The canonical repository is [**on GitHub**](https://github.com/vr33ni-dev/skill-swap_flutter) · [Mirror on GitLab →](https://gitlab.com/vr33ni-personal/skill-swap_flutter.git) [![Mirror Status](https://github.com/vr33ni-dev/skill-swap_flutter/actions/workflows/gitlab-mirror.yml/badge.svg)](https://github.com/vr33ni-dev/skill-swap_flutter/actions/workflows/gitlab-mirror.yml)
